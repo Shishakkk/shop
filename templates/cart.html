@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="flex:1; max-width:800px; margin:0 auto;">
+    <h2>🛒 Корзина</h2>
+    {% if items %}
+    <table class="cart-table">
+        <thead><tr><th></th><th>Товар</th><th>Цена</th><th>Кол-во</th><th>Сумма</th><th></th></tr></thead>
+        <tbody>
+        {% for item in items %}
+        <tr>
+            <td><img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22><rect fill=%22%23334155%22 width=%2250%22 height=%2250%22/><text fill=%22%2394a3b8%22 x=%2225%22 y=%2225%22 text-anchor=%22middle%22>📦</text></svg>'"></td>
+            <td>{{ item.product.name }}</td>
+            <td>{{ "{:,}".format(item.product.price) }} ₽</td>
+            <td>
+                <button class="btn btn-sm" onclick="updateCart({{ item.id }}, {{ item.quantity - 1 }})">−</button>
+                <strong style="margin:0 8px;">{{ item.quantity }}</strong>
+                <button class="btn btn-sm" onclick="updateCart({{ item.id }}, {{ item.quantity + 1 }})">+</button>
+            </td>
+            <td>{{ "{:,}".format(item.product.price * item.quantity) }} ₽</td>
+            <td><button class="btn btn-danger btn-sm" onclick="removeCart({{ item.id }})">🗑️</button></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <div style="text-align:right;font-size:1.3rem;color:var(--accent);">Итого: {{ "{:,}".format(cart_total) }} ₽</div>
+    <p>💰 Баланс: <strong style="color:var(--accent);">{{ "{:,}".format(current_user.balance) }} ₽</strong></p>
+    <button class="btn btn-accent" onclick="checkout()" style="margin-top:12px;">✅ Оформить заказ</button>
+    {% else %}
+    <p>Корзина пуста</p>
+    {% endif %}
+    <a href="/" class="btn" style="margin-top:12px;">⬅ Назад</a>
+</div>
+<script>
+    async function updateCart(id, qty) {
+        await fetch('/update-cart/' + id, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quantity: qty })
+        });
+        location.reload();
+    }
+    async function removeCart(id) {
+        await fetch('/remove-cart/' + id, { method: 'POST' });
+        location.reload();
+    }
+    async function checkout() {
+        const resp = await fetch('/checkout', { method: 'POST' });
+        const data = await resp.json();
+        if (resp.ok) {
+            alert('Заказ #' + data.order_id + ' оформлен!');
+            location.reload();
+        } else {
+            alert(data.error);
+        }
+    }
+</script>
+{% endblock %}

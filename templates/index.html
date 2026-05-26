@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<aside class="sidebar">
+    <h3>🔍 Фильтры</h3>
+    <form method="get">
+        <div class="filter-group">
+            <label>Категория</label>
+            {% for cat in categories %}
+            <label class="checkbox-label">
+                <input type="radio" name="category" value="{{ cat }}" {% if selected_category==cat %}checked{% endif %} onchange="this.form.submit()">
+                {{ cat }}
+            </label>
+            {% endfor %}
+            <label class="checkbox-label">
+                <input type="radio" name="category" value="" {% if not selected_category %}checked{% endif %} onchange="this.form.submit()"> Все
+            </label>
+        </div>
+        <div class="filter-group">
+            <label>Макс. цена</label>
+            <input type="range" name="max_price" min="0" max="200000" value="{{ max_price }}" onchange="this.form.submit()">
+            <span>до {{ max_price }} ₽</span>
+        </div>
+        <div class="filter-group">
+            <label>Сортировка</label>
+            <select name="sort" onchange="this.form.submit()">
+                <option value="default" {% if sort=='default' %}selected{% endif %}>По умолчанию</option>
+                <option value="price-asc" {% if sort=='price-asc' %}selected{% endif %}>Цена ↑</option>
+                <option value="price-desc" {% if sort=='price-desc' %}selected{% endif %}>Цена ↓</option>
+                <option value="date-desc" {% if sort=='date-desc' %}selected{% endif %}>Новые</option>
+                <option value="qty-desc" {% if sort=='qty-desc' %}selected{% endif %}>Больше на складе</option>
+            </select>
+        </div>
+        <a href="/" class="btn" style="width:100%;">🔄 Сбросить</a>
+    </form>
+</aside>
+<div class="products-area">
+    <h2>🖥️ Каталог ({{ products|length }})</h2>
+    <div class="product-grid">
+        {% for p in products %}
+        <div class="product-card">
+            {% if p.quantity == 0 %}<span style="position:absolute;top:8px;right:8px;background:var(--danger);color:#fff;padding:4px 8px;border-radius:6px;font-size:0.7rem;">Нет</span>{% endif %}
+            <img src="{{ p.image_url }}" alt="{{ p.name }}" class="product-image" onerror="this.style.display='none'">
+            <h3>{{ p.name }}</h3>
+            <p style="color:var(--text2);font-size:0.8rem;">{{ p.description }}</p>
+            <div class="price">{{ "{:,}".format(p.price) }} ₽</div>
+            <p style="font-size:0.75rem;color:var(--text2);">📦 {% if p.quantity == 0 %}Нет{% elif p.quantity < 10 %}Осталось: {{ p.quantity }}{% else %}В наличии: {{ p.quantity }}{% endif %}</p>
+            <button class="btn btn-accent btn-add" data-url="/add-to-cart/{{ p.id }}" style="width:100%;margin-top:8px;" {% if p.quantity==0 %}disabled{% endif %}>
+                🛒 В корзину
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

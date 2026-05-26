@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="flex:1; max-width:800px; margin:0 auto;">
+    <h2>📋 История заказов</h2>
+    {% if orders %}
+    {% for order in orders %}
+    <div style="background:var(--surface2);border-radius:8px;padding:12px;margin-bottom:10px;">
+        <strong>Заказ #{{ order.id }}</strong> | {{ order.date.strftime('%d.%m.%Y %H:%M') }}<br>
+        Сумма: {{ "{:,}".format(order.total) }} ₽ | Товаров: {{ order.items.count() }}
+        <details style="margin-top:6px;"><summary>Состав</summary>
+            {% for item in order.items %}
+            <div style="font-size:0.85rem;">• {{ item.product_name }} ×{{ item.quantity }} — {{ "{:,}".format(item.price * item.quantity) }} ₽</div>
+            {% endfor %}
+        </details>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p>Заказов пока нет</p>
+    {% endif %}
+    <a href="/" class="btn">⬅ Назад</a>
+</div>
+{% endblock %}
